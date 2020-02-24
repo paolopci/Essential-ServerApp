@@ -11,11 +11,16 @@ namespace ServerApp.Controllers
 {
     public class HomeController : Controller
     {
-        
+        private DataContext context;
+
+        public HomeController(DataContext context)
+        {
+            this.context = context;
+        }
 
         public IActionResult Index()
         {
-            return View("Placeholder");
+            return View(context.Products.First());
         }
 
         public IActionResult Privacy()
