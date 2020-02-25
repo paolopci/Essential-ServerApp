@@ -1,16 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.SpaServices.AngularCli;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.SpaServices.AngularCli;
-using Microsoft.EntityFrameworkCore;
 using ServerApp.Models;
+using Microsoft.OpenApi.Models;
+using System;
 
 namespace ServerApp
 {
@@ -29,7 +26,14 @@ namespace ServerApp
       string connectionString = Configuration["ConnectionStrings:DefaultConnection"];
       services.AddDbContext<DataContext>(options => options.UseSqlServer(connectionString));
       services.AddControllersWithViews();
-     // services.AddRazorPages();
+
+      services.AddSwaggerGen(opts =>
+      {
+        opts.SwaggerDoc("v1", new OpenApiInfo
+        {
+          Title = "SportsStore API", Version = "v1"
+        });
+      });
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -59,6 +63,17 @@ namespace ServerApp
           name: "default",
           pattern: "{controller=Home}/{action=Index}/{id?}");
       });
+
+
+      // Swagger
+      app.UseSwagger();
+      app.UseSwaggerUI(opts =>
+      {
+        opts.SwaggerEndpoint("/swagger/v1/swagger.json", "SportsStore API");
+      });
+
+
+
 
       app.UseSpa(spa =>
       {
