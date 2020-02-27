@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ServerApp.Models;
 //using System.Data.Entity;
 using System.Linq;
+using ServerApp.Models.BindingTargets;
 
 namespace ServerApp.Controllers
 {
@@ -60,7 +61,7 @@ namespace ServerApp.Controllers
 
       if (!string.IsNullOrWhiteSpace(category))
       {
-        string catLower = category.ToLower();// tutto minuscolo..
+        string catLower = category.ToLower(); // tutto minuscolo..
         query = query.Where(p => p.Category.ToLower().Contains(catLower));
       }
 
@@ -94,6 +95,46 @@ namespace ServerApp.Controllers
       {
         return query;
       }
+    }
+
+    [HttpPost]
+    public IActionResult CreateProduct([FromBody] ProductData pData)
+    {
+      if (ModelState.IsValid)
+      {
+        Product prod = pData.Product;
+        if (prod.Supplier != null && prod.Supplier.SupplierId != 0)
+        {
+          context.Attach(prod.Supplier);
+        }
+
+        context.Add(prod);
+        context.SaveChanges();
+        return Ok(prod.ProductId);
+      }
+
+      return BadRequest(ModelState);
+    }
+
+
+    [HttpPut("{id}")]
+    public IActionResult ReplaceProduct(long id, [FromBody] ProductData pData)
+    {
+      if (ModelState.IsValid)
+      {
+        Product prod = pData.Product;
+        prod.ProductId = id;
+        if (prod.Supplier != null && prod.Supplier.SupplierId != 0)
+        {
+          context.Attach(prod.Supplier);
+        }
+
+        context.Update(prod);
+        context.SaveChanges();
+        return Ok();
+      }
+
+      return BadRequest(ModelState);
     }
   }
 }
