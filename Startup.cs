@@ -69,7 +69,7 @@ namespace ServerApp
 
         endpoints.MapControllerRoute(
           name: "Angular_fallback",
-          pattern: "{target:regex(table|detail)}/{*catchall}",
+          pattern: "{target:regex(table)}/{*catchall}",
           defaults: new {controller = "Home", action = "Index"});
       });
 
