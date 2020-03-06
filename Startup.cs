@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -38,6 +39,22 @@ namespace ServerApp
           Title = "SportsStore API", Version = "v1"
         });
       });
+
+      // SEssion Sql-cache Capther 9
+      services.AddDistributedSqlServerCache(opts =>
+      {
+        opts.ConnectionString = connectionString;
+        opts.SchemaName = "dbo";
+        opts.TableName = "SessionData";
+      });
+
+      services.AddSession(opts =>
+      {
+        opts.Cookie.Name = "SportsStore.Session";
+        opts.IdleTimeout = System.TimeSpan.FromHours(48);
+        opts.Cookie.HttpOnly = false;
+        opts.Cookie.IsEssential = true;
+      });
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -56,6 +73,8 @@ namespace ServerApp
 
       app.UseHttpsRedirection();
       app.UseStaticFiles();
+      // Session Chapter 9
+      app.UseSession();
 
       app.UseRouting();
 
@@ -69,19 +88,14 @@ namespace ServerApp
 
         endpoints.MapControllerRoute(
           name: "Angular_fallback",
-          pattern: "{target:regex(table)}/{*catchall}",
+          pattern: "{target:regex(store|cart)}/{*catchall}",
           defaults: new {controller = "Home", action = "Index"});
       });
 
 
       // Swagger
       app.UseSwagger();
-      app.UseSwaggerUI(opts =>
-      {
-        opts.SwaggerEndpoint("/swagger/v1/swagger.json", "SportsStore API");
-      });
-
-
+      app.UseSwaggerUI(opts => { opts.SwaggerEndpoint("/swagger/v1/swagger.json", "SportsStore API"); });
 
 
       app.UseSpa(spa =>
